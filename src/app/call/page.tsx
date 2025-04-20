@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 'use client';
 import { useState, useEffect } from 'react';
 import DailyIframe, { DailyCall } from '@daily-co/daily-js';
@@ -42,8 +43,7 @@ export default function CallPage() {
     const container = document.getElementById('daily-container');
     if (!container) return;
 
-    // bypass TS overload error
-    // @ts-ignore
+    // @ts-expect-error daily-js types mismatch here
     const frame = (DailyIframe as any).createFrame({
       parentElement: container,
       showLeaveButton: true,
@@ -76,18 +76,17 @@ export default function CallPage() {
             onClick={createRoom}
             className="px-4 py-2 rounded bg-blue-600 text-white"
           >
-            Start 5‑min Call
+            Start 5‑min Call
           </button>
         ) : (
           <button
             onClick={recordAndTranscribe}
             className="px-4 py-2 rounded bg-green-600 text-white"
           >
-            Record & Transcribe 5 s
+            Record & Transcribe 5 s
           </button>
         )}
       </main>
     </div>
   );
 }
-
