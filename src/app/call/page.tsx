@@ -6,14 +6,14 @@ export default function CallPage() {
   const [call, setCall] = useState<DailyCall | null>(null);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
 
-  // 1. Create a 5‑min Daily room
+  // Create a 5‑min room
   async function createRoom() {
     const resp = await fetch('/api/room', { method: 'POST' });
     const { url } = await resp.json();
     setRoomUrl(url);
   }
 
-  // 2. Record 5 s of audio and send to transcript API
+  // Record 5 s and transcribe
   async function recordAndTranscribe() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const recorder = new MediaRecorder(stream);
@@ -24,9 +24,7 @@ export default function CallPage() {
     recorder.onstop = async () => {
       const blob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
       const buffer = await blob.arrayBuffer();
-      const base64 = btoa(
-        String.fromCharCode(...new Uint8Array(buffer))
-      );
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
       const res = await fetch('/api/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -37,19 +35,22 @@ export default function CallPage() {
     };
   }
 
-  // 3. When roomUrl is set, join and mount the Daily iframe
+  // Mount the Daily iframe behind the UI
   useEffect(() => {
     if (!roomUrl || call) return;
+    const container = document.getElementById('daily-container');
+    if (!container) return;
 
     const frame = DailyIframe.createFrame({
+      parentElement: container,
+      showLeaveButton: true,
       iframeStyle: {
-        position: 'fixed',
+        position: 'absolute',
         inset: '0',
         width: '100%',
         height: '100%',
         border: '0',
       },
-      showLeaveButton: true,
     });
 
     frame.join({ url: roomUrl });
@@ -61,23 +62,29 @@ export default function CallPage() {
   }, [roomUrl, call]);
 
   return (
-    <main className="flex flex-col items-center justify-center h-screen gap-4">
-      {!roomUrl && (
-        <button
-          onClick={createRoom}
-          className="px-4 py-2 rounded bg-blue-600 text-white"
-        >
-          Start 5‑min Call
-        </button>
-      )}
-      {roomUrl && (
-        <button
-          onClick={recordAndTranscribe}
-          className="px-4 py-2 rounded bg-green-600 text-white"
-        >
-          Record & Transcribe 5 s
-        </button>
-      )}
-    </main>
+    <div className="relative w-full h-screen">
+      {/* behind-the-scenes Daily iframe */}
+      <div id="daily-container" className="absolute inset-0 z-0"></div>
+
+      {/* UI on top */}
+      <main className="relative z-10 flex flex-col items-center justify-center h-screen gap-4">
+        {!roomUrl ? (
+          <button
+            onClick={createRoom}
+            className="px-4 py-2 rounded bg-blue-600 text-white"
+          >
+            Start 5‑min Call
+          </button>
+        ) : (
+          <button
+            onClick={recordAndTranscribe}
+            className="px-4 py-2 rounded bg-green-600 text-white"
+          >
+            Record & Transcribe 5 s
+          </button>
+        )}
+      </main>
+    </div>
   );
 }
+
