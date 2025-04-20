@@ -1,3 +1,5 @@
+return () => { void frame.destroy(); };
+return () => { void frame.destroy(); };
 'use client';
 import { useState, useEffect } from 'react';
 import DailyIframe, { DailyCall } from '@daily-co/daily-js';
@@ -27,7 +29,7 @@ export default function CallPage() {
     frame.join({ url: roomUrl });
     setCall(frame);
 
-    return () => frame.destroy();
+    return () => { void frame.destroy(); };
   }, [roomUrl, call]);
 
   return (
