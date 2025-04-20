@@ -6,14 +6,14 @@ export default function CallPage() {
   const [call, setCall] = useState<DailyCall | null>(null);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
 
-  // Create a 5‑min room
+  // 1. Create a 5‑min Daily room
   async function createRoom() {
     const resp = await fetch('/api/room', { method: 'POST' });
     const { url } = await resp.json();
     setRoomUrl(url);
   }
 
-  // Record 5 s and transcribe
+  // 2. Record 5 s audio and transcribe
   async function recordAndTranscribe() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const recorder = new MediaRecorder(stream);
@@ -35,13 +35,16 @@ export default function CallPage() {
     };
   }
 
-  // Mount the Daily iframe behind the UI
+  // 3. Mount the Daily iframe behind the UI
   useEffect(() => {
     if (!roomUrl || call) return;
     const container = document.getElementById('daily-container');
     if (!container) return;
 
-    const frame = DailyIframe.createFrame({
+    // bypass TS overload error
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const frame = (DailyIframe as any).createFrame({
       parentElement: container,
       showLeaveButton: true,
       iframeStyle: {
@@ -80,11 +83,10 @@ export default function CallPage() {
             onClick={recordAndTranscribe}
             className="px-4 py-2 rounded bg-green-600 text-white"
           >
-            Record & Transcribe 5 s
+            Record & Transcribe 5 s
           </button>
         )}
       </main>
     </div>
   );
 }
-
