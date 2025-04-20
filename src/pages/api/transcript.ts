@@ -3,8 +3,13 @@ import { SpeechClient } from '@google-cloud/speech';
 
 const client = new SpeechClient();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).end();
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).end();
+  }
 
   const { audioContent } = req.body; // expect base64‑encoded LINEAR16
 
@@ -19,12 +24,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const transcription = response.results
-      .map(r => r.alternatives?.[0]?.transcript || '')
-      .join('\n');
+      ?.map((r) => r.alternatives?.[0]?.transcript)
+      .filter((t): t is string => Boolean(t))
+      .join('\n') ?? '';
 
     return res.status(200).json({ transcription });
-  } catch (e: any) {
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Unknown error';
     console.error(e);
-    return res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: message });
   }
 }
