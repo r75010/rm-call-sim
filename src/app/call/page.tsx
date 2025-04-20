@@ -1,21 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
-import DailyIframe, { DailyCall } from '@daily-co/daily-js';
+import DailyIframe from '@daily-co/daily-js';
 
 export default function CallPage() {
-  const [call, setCall] = useState<DailyCall | null>(null);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
 
-  // 1. Create a 5‑min Daily room
+  // Create a 5‑min Daily room
   async function createRoom() {
     const resp = await fetch('/api/room', { method: 'POST' });
     const { url } = await resp.json();
     setRoomUrl(url);
   }
 
-  // 2. Record 5 s audio and transcribe
+  // Record 5 s audio and transcribe
   async function recordAndTranscribe() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const recorder = new MediaRecorder(stream);
@@ -37,13 +35,14 @@ export default function CallPage() {
     };
   }
 
-  // 3. Mount the Daily iframe behind the UI
+  // Mount the Daily iframe
   useEffect(() => {
-    if (!roomUrl || call) return;
+    if (!roomUrl) return;
     const container = document.getElementById('daily-container');
     if (!container) return;
 
-    const frame = (DailyIframe as any).createFrame({
+    // bypass TS issues by treating createFrame as any
+    const frame: any = (DailyIframe as any).createFrame({
       parentElement: container,
       showLeaveButton: true,
       iframeStyle: {
@@ -56,35 +55,25 @@ export default function CallPage() {
     });
 
     frame.join({ url: roomUrl });
-    setCall(frame);
-
-    return () => {
-      void frame.destroy();
-    };
-  }, [roomUrl, call]);
+    return () => void frame.destroy();
+  }, [roomUrl]);
 
   return (
     <div className="relative w-full h-screen">
-      {/* behind-the-scenes Daily iframe */}
-      <div id="daily-container" className="absolute inset-0 z-0"></div>
-
-      {/* UI on top */}
+      <div id="daily-container" className="absolute inset-0"></div>
       <main className="relative z-10 flex flex-col items-center justify-center h-screen gap-4">
-        {!roomUrl ? (
-          <button
-            onClick={createRoom}
-            className="px-4 py-2 rounded bg-blue-600 text-white"
-          >
-            Start 5‑min Call
-          </button>
-        ) : (
-          <button
-            onClick={recordAndTranscribe}
-            className="px-4 py-2 rounded bg-green-600 text-white"
-          >
-            Record & Transcribe 5 s
-          </button>
-        )}
+        <button
+          onClick={createRoom}
+          className="px-4 py-2 rounded bg-blue-600 text-white"
+        >
+          Start 5‑min Call
+        </button>
+        <button
+          onClick={recordAndTranscribe}
+          className="px-4 py-2 rounded bg-green-600 text-white"
+        >
+          Record & Transcribe 5 s
+        </button>
       </main>
     </div>
   );
