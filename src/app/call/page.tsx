@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useEffect } from 'react';
 import DailyIframe, { DailyCall } from '@daily-co/daily-js';
@@ -42,7 +43,6 @@ export default function CallPage() {
     if (!container) return;
 
     // bypass TS overload error
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const frame = (DailyIframe as any).createFrame({
       parentElement: container,
@@ -90,3 +90,4 @@ export default function CallPage() {
     </div>
   );
 }
+
