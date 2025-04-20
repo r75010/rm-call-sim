@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,14 +7,14 @@ import DailyIframe from '@daily-co/daily-js';
 export default function CallPage() {
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
 
-  // Create a 5‑min Daily room
+  // 1. Create a 5‑min room
   async function createRoom() {
     const resp = await fetch('/api/room', { method: 'POST' });
     const { url } = await resp.json();
     setRoomUrl(url);
   }
 
-  // Record 5 s audio and transcribe
+  // 2. Record 5 s audio and transcribe
   async function recordAndTranscribe() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const recorder = new MediaRecorder(stream);
@@ -35,14 +36,14 @@ export default function CallPage() {
     };
   }
 
-  // Mount the Daily iframe
+  // 3. Mount the Daily iframe
   useEffect(() => {
     if (!roomUrl) return;
     const container = document.getElementById('daily-container');
     if (!container) return;
 
-    // bypass TS issues by treating createFrame as any
-    const frame: any = (DailyIframe as any).createFrame({
+    // @ts-ignore
+    const frame: any = DailyIframe.createFrame({
       parentElement: container,
       showLeaveButton: true,
       iframeStyle: {
@@ -60,7 +61,7 @@ export default function CallPage() {
 
   return (
     <div className="relative w-full h-screen">
-      <div id="daily-container" className="absolute inset-0"></div>
+      <div id="daily-container" className="absolute inset-0 z-0"></div>
       <main className="relative z-10 flex flex-col items-center justify-center h-screen gap-4">
         <button
           onClick={createRoom}
