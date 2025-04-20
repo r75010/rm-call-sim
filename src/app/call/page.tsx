@@ -7,7 +7,7 @@ import DailyIframe from '@daily-co/daily-js';
 export default function CallPage() {
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
 
-  // 1. Create a 5‑min room
+  // 1. Create a 5‑min Daily room
   async function createRoom() {
     const resp = await fetch('/api/room', { method: 'POST' });
     const { url } = await resp.json();
@@ -42,7 +42,7 @@ export default function CallPage() {
     const container = document.getElementById('daily-container');
     if (!container) return;
 
-    // @ts-ignore
+    // @ts-expect-error: daily-js type mismatch
     const frame: any = DailyIframe.createFrame({
       parentElement: container,
       showLeaveButton: true,
