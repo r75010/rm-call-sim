@@ -1,5 +1,3 @@
-return () => { void frame.destroy(); };
-return () => { void frame.destroy(); };
 'use client';
 import { useState, useEffect } from 'react';
 import DailyIframe, { DailyCall } from '@daily-co/daily-js';
@@ -9,27 +7,32 @@ export default function CallPage() {
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
 
   async function createRoom() {
-    const r = await fetch('/api/room', { method: 'POST' }).then(r => r.json());
-    setRoomUrl(r.url);
+    const resp = await fetch('/api/room', { method: 'POST' });
+    const data = await resp.json();
+    setRoomUrl(data.url);
   }
 
-  // join once we have a room URL
   useEffect(() => {
     if (!roomUrl || call) return;
+
     const frame = DailyIframe.createFrame({
       iframeStyle: {
         position: 'fixed',
-        inset: 0,
+        inset: '0',
         width: '100%',
         height: '100%',
         border: '0',
       },
       showLeaveButton: true,
     });
+
     frame.join({ url: roomUrl });
     setCall(frame);
 
-    return () => { void frame.destroy(); };
+    // cleanup
+    return () => {
+      void frame.destroy(); // ensures the effect returns void, not a Promise
+    };
   }, [roomUrl, call]);
 
   return (
